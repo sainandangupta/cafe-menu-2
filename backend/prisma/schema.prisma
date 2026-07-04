@@ -1,0 +1,161 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id         String    @id @default(dbgenerated("auth.uid()")) @db.Uuid
+  email      String    @unique @db.VarChar(255)
+  role       String    @db.VarChar(20)
+  cafe_id    String?   @db.Uuid
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+  updated_at DateTime? @default(now()) @db.Timestamp(6)
+  cafe       Cafe?     @relation(fields: [cafe_id], references: [id], onDelete: SetNull)
+
+  @@map("users")
+}
+
+model Cafe {
+  id             String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name           String     @db.VarChar(255)
+  email          String?    @db.VarChar(255)
+  phone          String?    @db.VarChar(20)
+  address        String?    @db.Text
+  gst_percentage Decimal?   @default(5.00) @db.Decimal(5, 2)
+  created_at     DateTime?  @default(now()) @db.Timestamp(6)
+  updated_at     DateTime?  @default(now()) @db.Timestamp(6)
+  users          User[]
+  categories     Category[]
+  dishes         Dish[]
+  tables         Table[]
+  orders         Order[]
+  ratings        Rating[]
+  settings       Setting[]
+
+  @@map("cafes")
+}
+
+model Category {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  cafe_id       String    @db.Uuid
+  name          String    @db.VarChar(100)
+  description   String?   @db.Text
+  display_order Int?      @default(0)
+  is_active     Boolean?  @default(true)
+  created_at    DateTime? @default(now()) @db.Timestamp(6)
+  updated_at    DateTime? @default(now()) @db.Timestamp(6)
+  cafe          Cafe      @relation(fields: [cafe_id], references: [id], onDelete: Cascade)
+  dishes        Dish[]
+
+  @@map("categories")
+}
+
+model Dish {
+  id            String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  cafe_id       String      @db.Uuid
+  category_id   String      @db.Uuid
+  name          String      @db.VarChar(255)
+  description   String?     @db.Text
+  price         Decimal     @db.Decimal(10, 2)
+  ingredients   String[]    @default([])
+  image_url     String?     @db.Text
+  is_available  Boolean?    @default(true)
+  is_veg        Boolean?    @default(false)
+  is_spicy      Boolean?    @default(false)
+  is_bestseller Boolean?    @default(false)
+  is_seasonal   Boolean?    @default(false)
+  labels        String[]    @default([])
+  created_at    DateTime?   @default(now()) @db.Timestamp(6)
+  updated_at    DateTime?   @default(now()) @db.Timestamp(6)
+  cafe          Cafe        @relation(fields: [cafe_id], references: [id], onDelete: Cascade)
+  category      Category    @relation(fields: [category_id], references: [id], onDelete: Cascade)
+  order_items   OrderItem[]
+  ratings       Rating[]
+
+  @@map("dishes")
+}
+
+model Table {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  cafe_id       String    @db.Uuid
+  table_number  Int
+  qr_code_token String    @unique @db.VarChar(255)
+  qr_code_url   String?   @db.Text
+  is_active     Boolean?  @default(true)
+  created_at    DateTime? @default(now()) @db.Timestamp(6)
+  cafe          Cafe      @relation(fields: [cafe_id], references: [id], onDelete: Cascade)
+  orders        Order[]
+  ratings       Rating[]
+
+  @@map("tables")
+}
+
+model Order {
+  id             String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  cafe_id        String      @db.Uuid
+  table_id       String      @db.Uuid
+  status         String      @default("confirmed") @db.VarChar(20)
+  subtotal       Decimal     @db.Decimal(10, 2)
+  gst_amount     Decimal     @db.Decimal(10, 2)
+  total          Decimal     @db.Decimal(10, 2)
+  customer_notes String?     @db.Text
+  order_token    String?     @unique @db.VarChar(10)
+  placed_at      DateTime?   @default(now()) @db.Timestamp(6)
+  delivered_at   DateTime?   @db.Timestamp(6)
+  created_at     DateTime?   @default(now()) @db.Timestamp(6)
+  updated_at     DateTime?   @default(now()) @db.Timestamp(6)
+  cafe           Cafe        @relation(fields: [cafe_id], references: [id], onDelete: Cascade)
+  table          Table       @relation(fields: [table_id], references: [id], onDelete: Cascade)
+  order_items    OrderItem[]
+  ratings        Rating[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id                   String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  order_id             String    @db.Uuid
+  dish_id              String    @db.Uuid
+  quantity             Int       @default(1)
+  price                Decimal   @db.Decimal(10, 2)
+  special_instructions String?   @db.Text
+  created_at           DateTime? @default(now()) @db.Timestamp(6)
+  order                Order     @relation(fields: [order_id], references: [id], onDelete: Cascade)
+  dish                 Dish      @relation(fields: [dish_id], references: [id])
+
+  @@map("order_items")
+}
+
+model Rating {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  cafe_id    String    @db.Uuid
+  dish_id    String    @db.Uuid
+  order_id   String    @db.Uuid
+  table_id   String    @db.Uuid
+  rating     Int
+  comment    String?   @db.Text
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+  cafe       Cafe      @relation(fields: [cafe_id], references: [id], onDelete: Cascade)
+  dish       Dish      @relation(fields: [dish_id], references: [id], onDelete: Cascade)
+  order      Order     @relation(fields: [order_id], references: [id], onDelete: Cascade)
+  table      Table     @relation(fields: [table_id], references: [id])
+
+  @@map("ratings")
+}
+
+model Setting {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  cafe_id       String    @db.Uuid
+  setting_key   String    @db.VarChar(100)
+  setting_value String?   @db.Text
+  created_at    DateTime? @default(now()) @db.Timestamp(6)
+  updated_at    DateTime? @default(now()) @db.Timestamp(6)
+  cafe          Cafe      @relation(fields: [cafe_id], references: [id], onDelete: Cascade)
+
+  @@unique([cafe_id, setting_key])
+  @@map("settings")
+}
