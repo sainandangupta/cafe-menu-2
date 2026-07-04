@@ -156,8 +156,9 @@ async function main() {
       let imageUrl: string | undefined = undefined;
       const mappedImage = rowImageMap.get(i);
       if (mappedImage) {
-        // Points to our local static file server URL
-        imageUrl = `http://localhost:5000/uploads/${mappedImage}`;
+        // Points to our static file server URL (uses process.env.BACKEND_URL in production, otherwise defaults to local)
+        const baseUrl = process.env.BACKEND_URL || 'http://localhost:5000';
+        imageUrl = `${baseUrl}/uploads/${mappedImage}`;
       }
 
       // Create Dish

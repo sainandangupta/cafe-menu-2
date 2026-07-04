@@ -17,6 +17,4 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-# Uploads directory
-uploads/*
-!uploads/.gitkeep
+

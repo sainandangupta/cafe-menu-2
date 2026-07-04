@@ -1,13 +1,3 @@
--- Users table (RBAC)
-CREATE TABLE users (
-  id UUID PRIMARY KEY DEFAULT auth.uid(),
-  email VARCHAR(255) UNIQUE NOT NULL,
-  role VARCHAR(20) NOT NULL CHECK (role IN ('admin', 'owner', 'customer')),
-  cafe_id UUID REFERENCES cafes(id),
-  created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW()
-);
-
 -- Cafe settings (single cafe for MVP)
 CREATE TABLE cafes (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -16,6 +6,16 @@ CREATE TABLE cafes (
   phone VARCHAR(20),
   address TEXT,
   gst_percentage DECIMAL(5,2) DEFAULT 5.00,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Users table (RBAC)
+CREATE TABLE users (
+  id UUID PRIMARY KEY DEFAULT auth.uid(),
+  email VARCHAR(255) UNIQUE NOT NULL,
+  role VARCHAR(20) NOT NULL CHECK (role IN ('admin', 'owner', 'customer')),
+  cafe_id UUID REFERENCES cafes(id),
   created_at TIMESTAMP DEFAULT NOW(),
   updated_at TIMESTAMP DEFAULT NOW()
 );
