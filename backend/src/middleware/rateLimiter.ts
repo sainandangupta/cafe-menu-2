@@ -7,7 +7,7 @@ export const loginRateLimiter = (req: Request, res: Response, next: NextFunction
   const ip = req.ip || req.socket.remoteAddress || 'unknown';
   const now = Date.now();
   const timeframe = 15 * 60 * 1000; // 15 minutes
-  const limit = 5;
+  const limit = 100;
 
   const record = ipStore.get(ip);
 
