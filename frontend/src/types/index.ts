@@ -47,6 +47,8 @@ export interface Dish {
   is_seasonal: boolean;
   labels: string[];
   category?: Category;
+  rating_avg?: number;
+  rating_count?: number;
   created_at?: string;
   updated_at?: string;
 }
