@@ -52,7 +52,7 @@ export const OwnerDashboard: React.FC = () => {
   }
 
   return (
-    <div className="flex min-h-screen bg-[#f0fdfa] text-gray-800">
+    <div className="flex flex-col lg:flex-row min-h-screen bg-[#f0fdfa] text-gray-800">
       {/* Sidebar Navigation */}
       <aside className="owner-sidebar">
         <div className="px-5 py-6">
@@ -123,7 +123,7 @@ export const OwnerDashboard: React.FC = () => {
       </aside>
 
       {/* Main Content Area */}
-      <div className="flex-1 ml-[240px] flex flex-col">
+      <div className="flex-1 lg:ml-[240px] flex flex-col">
         {/* Top Header */}
         <header className="owner-header">
           <h1 className="text-lg font-bold text-white tracking-wide">

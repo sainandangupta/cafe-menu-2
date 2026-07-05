@@ -4,6 +4,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { useCategories, useDishes } from '../../hooks/useDishes';
 import { useQuery } from '@tanstack/react-query';
 import { tablesService } from '../../services/tables';
+import { ratingsService } from '../../services/ratings';
 import MenuManagementPage from './MenuManagementPage';
 import CategoryManagementPage from './CategoryManagementPage';
 import TableQRManagementPage from './TableQRManagementPage';
@@ -23,6 +24,15 @@ export const AdminDashboard: React.FC = () => {
     queryFn: () => tablesService.getTables(cafeId || ''),
     enabled: !!cafeId,
   });
+  const { data: ratings = [] } = useQuery({
+    queryKey: ['ratings', cafeId],
+    queryFn: () => ratingsService.getRatingsByCafe(cafeId || ''),
+    enabled: !!cafeId,
+  });
+
+  const avgRating = ratings.length > 0
+    ? (ratings.reduce((sum, r) => sum + r.rating, 0) / ratings.length).toFixed(1)
+    : '0.0';
 
   const handleLogout = () => {
     logout();
@@ -51,7 +61,7 @@ export const AdminDashboard: React.FC = () => {
   }
 
   return (
-    <div className="flex min-h-screen bg-[#f8f9ff] text-gray-800">
+    <div className="flex flex-col lg:flex-row min-h-screen bg-[#f8f9ff] text-gray-800">
       {/* Sidebar Navigation */}
       <aside className="admin-sidebar">
         <div className="px-5 py-6">
@@ -105,7 +115,7 @@ export const AdminDashboard: React.FC = () => {
       </aside>
 
       {/* Main Content Area */}
-      <div className="flex-1 ml-[240px] flex flex-col">
+      <div className="flex-1 lg:ml-[240px] flex flex-col">
         {/* Top Header */}
         <header className="bg-white border-b border-gray-150 px-6 py-3 flex justify-between items-center sticky top-0 z-30">
           <h1 className="text-base font-bold text-gray-900 tracking-wide uppercase">
@@ -178,14 +188,14 @@ export const AdminDashboard: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="kpi-card bg-white border border-gray-250 rounded-xl p-4 flex flex-col justify-between shadow-xs">
+                   <div className="kpi-card bg-white border border-gray-250 rounded-xl p-4 flex flex-col justify-between shadow-xs">
                     <div className="flex justify-between items-center text-xs text-gray-400">
                       <span className="material-symbols-outlined text-amber-500">star</span>
-                      <span className="text-[10px] font-bold text-amber-500">4.8 avg</span>
+                      <span className="text-[10px] font-bold text-amber-500">{avgRating} avg</span>
                     </div>
                     <div className="mt-3">
                       <p className="text-[10px] text-gray-400 font-semibold uppercase">Total Ratings</p>
-                      <p className="text-xl font-bold text-gray-800 mt-0.5">234</p>
+                      <p className="text-xl font-bold text-gray-800 mt-0.5">{ratings.length}</p>
                     </div>
                   </div>
                 </div>

@@ -142,7 +142,8 @@ export const TableQRManagementPage: React.FC<TableQRManagementPageProps> = ({ ca
             </div>
           ) : (
             <div className="bg-white border border-gray-250 rounded-xl overflow-hidden shadow-xs">
-              <table className="data-table">
+              <div className="overflow-x-auto">
+                <table className="data-table">
                 <thead>
                   <tr>
                     <th>Table #</th>
@@ -205,7 +206,8 @@ export const TableQRManagementPage: React.FC<TableQRManagementPageProps> = ({ ca
                     );
                   })}
                 </tbody>
-              </table>
+                </table>
+              </div>
             </div>
           )}
         </div>

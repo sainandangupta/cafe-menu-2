@@ -10,11 +10,12 @@ export const ratingController = {
       const dishId = req.query.dish_id as string;
       const orderId = req.query.order_id as string;
 
-      if (!cafeId) {
-        throw new ValidationError('cafe_id query parameter is required');
+      if (!cafeId && !dishId && !orderId) {
+        throw new ValidationError('cafe_id, dish_id, or order_id query parameter is required');
       }
 
-      const whereClause: any = { cafe_id: cafeId };
+      const whereClause: any = {};
+      if (cafeId) whereClause.cafe_id = cafeId;
       if (dishId) whereClause.dish_id = dishId;
       if (orderId) whereClause.order_id = orderId;
 

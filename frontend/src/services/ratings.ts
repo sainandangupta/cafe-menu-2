@@ -18,6 +18,13 @@ export const ratingsService = {
     return response.data;
   },
 
+  getRatingsByCafe: async (cafeId: string): Promise<Rating[]> => {
+    const response = await api.get<Rating[]>(`/ratings`, {
+      params: { cafe_id: cafeId },
+    });
+    return response.data;
+  },
+
   createRating: async (data: CreateRatingInput): Promise<Rating> => {
     const response = await api.post<Rating>(`/ratings`, data);
     return response.data;
