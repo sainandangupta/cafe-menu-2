@@ -233,7 +233,18 @@ export const MenuPage: React.FC = () => {
                           </span>
                         )}
                       </div>
-                      <p className="text-[#006e2f] font-bold text-sm">₹{dish.price}</p>
+                      <div className="flex justify-between items-center mt-1">
+                        <p className="text-[#006e2f] font-bold text-sm">₹{dish.price}</p>
+                        {dish.rating_avg > 0 ? (
+                          <div className="flex items-center gap-0.5 text-[10px] text-gray-500">
+                            <span className="material-symbols-outlined text-[#fea619] text-[12px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                            <span className="font-bold text-gray-700">{dish.rating_avg}</span>
+                            <span className="text-gray-400">({dish.rating_count})</span>
+                          </div>
+                        ) : (
+                          <span className="text-[9px] bg-gray-50 text-gray-400 font-semibold px-1.5 py-0.5 rounded">New</span>
+                        )}
+                      </div>
                     </div>
 
                     {dish.is_available ? (

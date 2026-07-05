@@ -72,7 +72,9 @@ export const DishDetailPage: React.FC = () => {
   // Calculate rating average
   const avgRating = ratings.length > 0 
     ? (ratings.reduce((sum, r) => sum + r.rating, 0) / ratings.length).toFixed(1) 
-    : '4.2'; // Default matching screen design when no ratings yet
+    : dish?.rating_avg && dish.rating_avg > 0
+    ? `${dish.rating_avg}`
+    : null;
 
   // Get recommendations ("Goes great with") - select first two items that aren't the current dish
   const recommendations = allDishes
@@ -115,7 +117,14 @@ export const DishDetailPage: React.FC = () => {
                 <h1 className="text-xl font-bold text-gray-900 mt-1">{dish.name}</h1>
                 <div className="flex items-center gap-1 mt-1 text-xs text-gray-500">
                   <span className="material-symbols-outlined text-[#fea619] text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-                  <span className="font-semibold text-gray-700">{avgRating}/5</span>
+                  <span className="font-semibold text-gray-700">
+                    {avgRating ? `${avgRating}/5` : 'No ratings yet'}
+                  </span>
+                  {(ratings.length > 0 || (dish?.rating_count && dish.rating_count > 0)) && (
+                    <span className="text-gray-400">
+                      ({ratings.length > 0 ? ratings.length : dish.rating_count})
+                    </span>
+                  )}
                 </div>
               </div>
               <div className="text-right">
