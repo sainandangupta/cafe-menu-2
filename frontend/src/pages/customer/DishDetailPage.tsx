@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { useDishDetails, useDishes } from '../../hooks/useDishes';
-import { ratingsService } from '../../services/ratings';
+import { ratingsService, DishRatingDetails } from '../../services/ratings';
 import { useCart } from '../../hooks/useCart';
 import CustomerLayout from '../../layouts/CustomerLayout';
 
@@ -14,6 +14,7 @@ export const DishDetailPage: React.FC = () => {
   const [quantity, setQuantity] = useState<number>(1);
   const [instructions, setInstructions] = useState('');
   const [ingredientsOpen, setIngredientsOpen] = useState(false);
+  const [reviewsOpen, setReviewsOpen] = useState(false);
 
   // Fetch dish details
   const { data: dish, isLoading: loadingDish } = useDishDetails(id);
@@ -21,12 +22,16 @@ export const DishDetailPage: React.FC = () => {
   // Fetch other dishes in cafe for recommendations ("Goes great with")
   const { data: allDishes = [] } = useDishes(tableContext.cafeId, true);
 
-  // Fetch ratings
-  const { data: ratings = [] } = useQuery({
-    queryKey: ['ratings', id],
-    queryFn: () => ratingsService.getRatingsByDish(id || ''),
+  // Fetch ratings details (avg, count, recent reviews)
+  const { data: ratingDetails } = useQuery<DishRatingDetails>({
+    queryKey: ['dish-ratings', id],
+    queryFn: () => ratingsService.getDishRatingDetails(id || ''),
     enabled: !!id,
   });
+
+  const reviews = ratingDetails?.ratings || [];
+  const ratingCount = ratingDetails?.rating_count || 0;
+  const ratingAvg = ratingDetails?.avg_rating || 0;
 
   const handleAddToCart = () => {
     if (!dish) return;
@@ -69,12 +74,8 @@ export const DishDetailPage: React.FC = () => {
     );
   }
 
-  // Calculate rating average
-  const avgRating = ratings.length > 0 
-    ? (ratings.reduce((sum, r) => sum + r.rating, 0) / ratings.length).toFixed(1) 
-    : dish?.rating_avg && dish.rating_avg > 0
-    ? `${dish.rating_avg}`
-    : null;
+  // Use live rating from API
+  const avgRating = ratingAvg > 0 ? ratingAvg.toFixed(1) : null;
 
   // Get recommendations ("Goes great with") - select first two items that aren't the current dish
   const recommendations = allDishes
@@ -120,10 +121,8 @@ export const DishDetailPage: React.FC = () => {
                   <span className="font-semibold text-gray-700">
                     {avgRating ? `${avgRating}/5` : 'No ratings yet'}
                   </span>
-                  {(ratings.length > 0 || (dish?.rating_count && dish.rating_count > 0)) && (
-                    <span className="text-gray-400">
-                      ({ratings.length > 0 ? ratings.length : dish.rating_count})
-                    </span>
+                  {ratingCount > 0 && (
+                    <span className="text-gray-400">({ratingCount} review{ratingCount !== 1 ? 's' : ''})</span>
                   )}
                 </div>
               </div>
@@ -214,6 +213,96 @@ export const DishDetailPage: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {/* Customer Reviews Section */}
+        <section className="px-4 mt-6">
+          <button
+            onClick={() => setReviewsOpen(!reviewsOpen)}
+            className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3.5 flex items-center justify-between cursor-pointer hover:bg-gray-50/50 transition-colors"
+          >
+            <div className="flex items-center gap-2">
+              <span className="material-symbols-outlined text-[#fea619] text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+              <span className="font-semibold text-xs text-gray-700">
+                Customer Reviews {ratingCount > 0 ? `(${ratingCount})` : ''}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              {avgRating && (
+                <span className="text-xs font-bold text-gray-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
+                  {avgRating} ★
+                </span>
+              )}
+              <span className="material-symbols-outlined text-gray-400">
+                {reviewsOpen ? 'expand_less' : 'expand_more'}
+              </span>
+            </div>
+          </button>
+
+          {reviewsOpen && (
+            <div className="bg-white border border-t-0 border-gray-200 rounded-b-xl px-4 py-4 -mt-1 space-y-4">
+              {ratingCount > 0 ? (
+                <>
+                  {/* Star distribution bars */}
+                  <div className="space-y-1.5">
+                    {[5, 4, 3, 2, 1].map((star) => {
+                      const count = reviews.filter(r => r.rating === star).length;
+                      const pct = ratingCount > 0 ? Math.round((count / ratingCount) * 100) : 0;
+                      return (
+                        <div key={star} className="flex items-center gap-2 text-[11px]">
+                          <span className="w-3 text-right font-bold text-gray-500">{star}</span>
+                          <span className="material-symbols-outlined text-amber-400 text-[13px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                          <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                            <div className="h-full bg-amber-400 rounded-full transition-all" style={{ width: `${pct}%` }} />
+                          </div>
+                          <span className="w-7 text-right text-gray-400 font-semibold">{pct}%</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Individual reviews */}
+                  {reviews.length > 0 && (
+                    <div className="border-t border-gray-100 pt-3 space-y-3">
+                      {reviews.map((review, idx) => (
+                        <div key={idx} className="flex flex-col gap-1">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-0.5">
+                              {[1, 2, 3, 4, 5].map((s) => (
+                                <span
+                                  key={s}
+                                  className="material-symbols-outlined text-[13px]"
+                                  style={{
+                                    fontVariationSettings: s <= review.rating ? "'FILL' 1" : "'FILL' 0",
+                                    color: s <= review.rating ? '#f59e0b' : '#d1d5db',
+                                  }}
+                                >
+                                  star
+                                </span>
+                              ))}
+                            </div>
+                            {review.created_at && (
+                              <span className="text-[9px] text-gray-400">
+                                {new Date(review.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                              </span>
+                            )}
+                          </div>
+                          {review.comment && (
+                            <p className="text-[11px] text-gray-600 leading-relaxed">"{review.comment}"</p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="text-center py-4">
+                  <span className="material-symbols-outlined text-gray-300 text-3xl mb-1">rate_review</span>
+                  <p className="text-xs text-gray-400">No reviews yet. Be the first to rate this dish!</p>
+                </div>
+              )}
+            </div>
+          )}
+        </section>
 
         {/* Goes great with Section */}
         {recommendations.length > 0 && (

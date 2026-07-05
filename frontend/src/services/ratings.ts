@@ -9,12 +9,22 @@ export interface CreateRatingInput {
   rating: number;
   comment?: string;
 }
+export interface DishRatingDetails {
+  avg_rating: number;
+  rating_count: number;
+  ratings: { rating: number; comment?: string; created_at?: string }[];
+}
 
 export const ratingsService = {
   getRatingsByDish: async (dishId: string): Promise<Rating[]> => {
     const response = await api.get<Rating[]>(`/ratings`, {
       params: { dish_id: dishId },
     });
+    return response.data;
+  },
+
+  getDishRatingDetails: async (dishId: string): Promise<DishRatingDetails> => {
+    const response = await api.get<DishRatingDetails>(`/dishes/${dishId}/ratings`);
     return response.data;
   },
 
