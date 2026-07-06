@@ -16,12 +16,6 @@ export const LiveOrderBoard: React.FC<LiveOrderBoardProps> = ({ cafeId, onViewDe
   const { data: orders = [], isLoading } = useOrders(cafeId, activeStatuses);
   const updateStatusMutation = useUpdateOrderStatus();
 
-  // Filter orders locally
-  const filteredOrders = orders.filter((order) => {
-    if (statusFilter === 'all') return true;
-    return order.status === statusFilter;
-  });
-
   const handleUpdateStatus = async (id: string, nextStatus: OrderStatus) => {
     try {
       await updateStatusMutation.mutateAsync({ id, status: nextStatus });
@@ -39,13 +33,6 @@ export const LiveOrderBoard: React.FC<LiveOrderBoardProps> = ({ cafeId, onViewDe
     }
   };
 
-  // Counts for top bar tabs
-  const countAll = orders.length;
-  const countConfirmed = orders.filter(o => o.status === 'confirmed').length;
-  const countPreparing = orders.filter(o => o.status === 'preparing').length;
-  const countPrepared = orders.filter(o => o.status === 'prepared').length;
-  const countDelivered = orders.filter(o => o.status === 'delivered').length;
-
   // Filter for today's orders (local date context)
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
@@ -55,11 +42,27 @@ export const LiveOrderBoard: React.FC<LiveOrderBoardProps> = ({ cafeId, onViewDe
     return new Date(placedTimeStr) >= todayStart;
   });
 
-  const todaysCountAll = todaysOrders.length;
-  const todaysCountPrepared = todaysOrders.filter(o => o.status === 'prepared').length;
-  const todaysCountDelivered = todaysOrders.filter(o => o.status === 'delivered').length;
+  // Filter orders locally (only today's orders)
+  const filteredOrders = todaysOrders.filter((order) => {
+    if (statusFilter === 'all') return true;
+    return order.status === statusFilter;
+  });
 
-  const totalRevenue = todaysOrders.reduce((sum, o) => sum + Number(o.total), 0);
+  // Counts for top bar tabs (scoped to today's orders)
+  const countAll = todaysOrders.length;
+  const countConfirmed = todaysOrders.filter(o => o.status === 'confirmed').length;
+  const countPreparing = todaysOrders.filter(o => o.status === 'preparing').length;
+  const countPrepared = todaysOrders.filter(o => o.status === 'prepared').length;
+  const countDelivered = todaysOrders.filter(o => o.status === 'delivered').length;
+
+  // Filter out rejected orders for performance calculations
+  const acceptedTodaysOrders = todaysOrders.filter(o => o.status !== 'rejected');
+
+  const todaysCountAll = acceptedTodaysOrders.length;
+  const todaysCountPrepared = acceptedTodaysOrders.filter(o => o.status === 'prepared').length;
+  const todaysCountDelivered = acceptedTodaysOrders.filter(o => o.status === 'delivered').length;
+
+  const totalRevenue = acceptedTodaysOrders.reduce((sum, o) => sum + Number(o.total), 0);
   const averageTicket = todaysCountAll > 0 ? Math.round(totalRevenue / todaysCountAll) : 0;
   const efficiency = todaysCountAll > 0 ? Math.round(((todaysCountPrepared + todaysCountDelivered) / todaysCountAll) * 100) : 100;
 

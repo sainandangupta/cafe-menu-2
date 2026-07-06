@@ -33,9 +33,10 @@ export const OrderHistoryPage: React.FC<OrderHistoryPageProps> = ({ cafeId, onVi
   });
 
   // Calculations
-  const deliveredOrders = orders.filter((o) => o.status === 'delivered');
+  const acceptedOrders = orders.filter((o) => o.status !== 'rejected');
+  const deliveredOrders = acceptedOrders.filter((o) => o.status === 'delivered');
   const totalRevenue = deliveredOrders.reduce((sum, o) => sum + Number(o.total), 0);
-  const totalOrdersCount = orders.length;
+  const totalOrdersCount = acceptedOrders.length;
   const avgOrderValue = totalOrdersCount > 0 ? Math.round(totalRevenue / totalOrdersCount) : 0;
 
   // Find most ordered dish
