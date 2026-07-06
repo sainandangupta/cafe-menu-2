@@ -57,6 +57,12 @@ export const OrderStatusPage: React.FC = () => {
     navigate(tableContext.tableToken ? `/menu?tableToken=${tableContext.tableToken}` : '/menu');
   };
 
+  const isValidUUID = (val: any) => {
+    if (typeof val !== 'string') return false;
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(val);
+  };
+
   const submitRating = async (dishId: string) => {
     const stars = ratedDishes[dishId];
     if (!stars) {
@@ -69,7 +75,7 @@ export const OrderStatusPage: React.FC = () => {
         cafe_id: order!.cafe_id,
         dish_id: dishId,
         order_id: order!.id,
-        table_id: order!.table_id,
+        table_id: (typeof order!.table_id === 'string' && isValidUUID(order!.table_id)) ? order!.table_id : undefined,
         rating: stars,
       });
       setSubmittedRatings((prev) => ({ ...prev, [dishId]: true }));
