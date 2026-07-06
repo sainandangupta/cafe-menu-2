@@ -41,7 +41,7 @@ export const OrderHistoryPage: React.FC<OrderHistoryPageProps> = ({ cafeId, onVi
 
   // Find most ordered dish
   const dishCounts: Record<string, number> = {};
-  orders.forEach((order) => {
+  acceptedOrders.forEach((order) => {
     order.order_items?.forEach((item) => {
       const name = item.dish?.name || 'Dish';
       dishCounts[name] = (dishCounts[name] || 0) + item.quantity;
