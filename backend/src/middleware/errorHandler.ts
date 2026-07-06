@@ -55,7 +55,7 @@ export const errorHandler = (
       status: 'error',
       code: statusCode,
       error: errorName,
-      message,
+      message: `${message} (Prisma code ${err.code}: ${err.message})`,
     });
   }
 
