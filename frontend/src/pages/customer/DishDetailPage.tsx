@@ -39,6 +39,12 @@ export const DishDetailPage: React.FC = () => {
   const ratingCount = ratingDetails?.rating_count || 0;
   const ratingAvg = ratingDetails?.avg_rating || 0;
 
+  const isValidUUID = (val: any) => {
+    if (typeof val !== 'string') return false;
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(val);
+  };
+
   const handleSubmitRating = async () => {
     if (userRating === 0) return;
     setIsSubmitting(true);
@@ -46,7 +52,7 @@ export const DishDetailPage: React.FC = () => {
       await ratingsService.createRating({
         cafe_id: dish?.cafe_id || tableContext.cafeId || '',
         dish_id: id || '',
-        table_id: tableContext.tableId || undefined,
+        table_id: (typeof tableContext.tableId === 'string' && isValidUUID(tableContext.tableId)) ? tableContext.tableId : undefined,
         rating: userRating,
       });
       setHasRated(true);

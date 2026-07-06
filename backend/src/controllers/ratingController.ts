@@ -52,11 +52,22 @@ export const ratingController = {
         throw new NotFoundError('Dish not found');
       }
 
-      // 2. If order_id is provided, verify it belongs to the table and contains the dish
+      // 2. Validate table_id if provided, fallback to null if it doesn't exist
+      let validatedTableId = table_id || null;
+      if (validatedTableId) {
+        const table = await prisma.table.findUnique({
+          where: { id: validatedTableId },
+        });
+        if (!table) {
+          validatedTableId = null;
+        }
+      }
+
+      // 3. If order_id is provided, verify it belongs to the table and contains the dish
       if (order_id) {
-        if (table_id) {
+        if (validatedTableId) {
           const order = await prisma.order.findFirst({
-            where: { id: order_id, table_id },
+            where: { id: order_id, table_id: validatedTableId },
           });
           if (!order) {
             throw new ValidationError('The specified order does not match your table context');
@@ -71,15 +82,15 @@ export const ratingController = {
         }
       }
 
-      // 3. Create the review
+      // 4. Create the review
       const newRating = await prisma.rating.create({
         data: {
           cafe_id: dish.cafe_id,
           dish_id,
           order_id: order_id || null,
-          table_id: table_id || null,
+          table_id: validatedTableId,
           rating,
-          comment,
+          comment: comment || null,
         },
       });
 
