@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useDishDetails, useDishes } from '../../hooks/useDishes';
 import { ratingsService, DishRatingDetails } from '../../services/ratings';
 import { useCart } from '../../hooks/useCart';
@@ -10,11 +10,18 @@ export const DishDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { addItem, tableContext } = useCart();
+  const queryClient = useQueryClient();
 
   const [quantity, setQuantity] = useState<number>(1);
   const [instructions, setInstructions] = useState('');
   const [ingredientsOpen, setIngredientsOpen] = useState(false);
   const [reviewsOpen, setReviewsOpen] = useState(false);
+
+  const [userRating, setUserRating] = useState<number>(0);
+  const [hoverRating, setHoverRating] = useState<number>(0);
+  const [userComment, setUserComment] = useState('');
+  const [hasRated, setHasRated] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Fetch dish details
   const { data: dish, isLoading: loadingDish } = useDishDetails(id);
@@ -32,6 +39,32 @@ export const DishDetailPage: React.FC = () => {
   const reviews = ratingDetails?.ratings || [];
   const ratingCount = ratingDetails?.rating_count || 0;
   const ratingAvg = ratingDetails?.avg_rating || 0;
+
+  const handleSubmitRating = async () => {
+    if (userRating === 0) return;
+    setIsSubmitting(true);
+    try {
+      await ratingsService.createRating({
+        cafe_id: dish?.cafe_id || tableContext.cafeId || '',
+        dish_id: id || '',
+        table_id: tableContext.tableId || undefined,
+        rating: userRating,
+        comment: userComment.trim() || undefined,
+      });
+      setHasRated(true);
+      setUserRating(0);
+      setUserComment('');
+      // Invalidate caches to refresh data
+      queryClient.invalidateQueries({ queryKey: ['dish', id] });
+      queryClient.invalidateQueries({ queryKey: ['dish-ratings', id] });
+      queryClient.invalidateQueries({ queryKey: ['dishes'] });
+    } catch (error) {
+      console.error(error);
+      alert('Failed to submit rating. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const handleAddToCart = () => {
     if (!dish) return;
@@ -240,6 +273,60 @@ export const DishDetailPage: React.FC = () => {
 
           {reviewsOpen && (
             <div className="bg-white border border-t-0 border-gray-200 rounded-b-xl px-4 py-4 -mt-1 space-y-4">
+              {/* Rate this Dish Form */}
+              <div className="border-b border-gray-100 pb-4 mb-2">
+                <h4 className="text-xs font-extrabold text-gray-800 uppercase tracking-wider mb-2.5">Rate this Dish</h4>
+                {hasRated ? (
+                  <div className="flex items-center gap-2 text-emerald-700 bg-emerald-50 border border-emerald-100 px-3 py-2.5 rounded-xl text-xs font-semibold">
+                    <span className="material-symbols-outlined text-lg">check_circle</span>
+                    <span>Thank you! Your rating has been submitted.</span>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-1.5">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <button
+                            key={star}
+                            type="button"
+                            onClick={() => setUserRating(star)}
+                            onMouseEnter={() => setHoverRating(star)}
+                            onMouseLeave={() => setHoverRating(0)}
+                            className="text-amber-400 hover:scale-110 active:scale-95 transition-transform cursor-pointer"
+                          >
+                            <span className="material-symbols-outlined text-2xl" style={{
+                              fontVariationSettings: (hoverRating || userRating) >= star ? "'FILL' 1" : "'FILL' 0"
+                            }}>
+                              star
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                      {(hoverRating || userRating) > 0 && (
+                        <span className="text-xs font-bold text-amber-600 bg-amber-50 border border-amber-100 px-2.5 py-0.5 rounded-full">
+                          {hoverRating || userRating} / 5
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex gap-2">
+                      <input
+                        placeholder="Write an optional review..."
+                        value={userComment}
+                        onChange={(e) => setUserComment(e.target.value)}
+                        className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs outline-none focus:bg-white focus:border-[#006e2f] transition-all"
+                      />
+                      <button
+                        onClick={handleSubmitRating}
+                        disabled={userRating === 0 || isSubmitting}
+                        className="bg-[#006e2f] hover:bg-[#006e2f]/90 disabled:bg-gray-200 disabled:text-gray-400 text-white rounded-xl text-xs font-bold px-4 py-2 transition-all active:scale-95 flex items-center justify-center gap-1 cursor-pointer disabled:cursor-not-allowed"
+                      >
+                        {isSubmitting ? 'Submitting...' : 'Submit'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
               {ratingCount > 0 ? (
                 <>
                   {/* Star distribution bars */}

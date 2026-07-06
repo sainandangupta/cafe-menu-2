@@ -52,29 +52,32 @@ export const ratingController = {
         throw new NotFoundError('Dish not found');
       }
 
-      // 2. Verify order belongs to the table
-      const order = await prisma.order.findFirst({
-        where: { id: order_id, table_id },
-      });
-      if (!order) {
-        throw new ValidationError('The specified order does not match your table context');
+      // 2. If order_id is provided, verify it belongs to the table and contains the dish
+      if (order_id) {
+        if (table_id) {
+          const order = await prisma.order.findFirst({
+            where: { id: order_id, table_id },
+          });
+          if (!order) {
+            throw new ValidationError('The specified order does not match your table context');
+          }
+        }
+
+        const orderItem = await prisma.orderItem.findFirst({
+          where: { order_id, dish_id },
+        });
+        if (!orderItem) {
+          throw new ValidationError('This dish was not part of the specified order');
+        }
       }
 
-      // 3. Verify order contains this dish item
-      const orderItem = await prisma.orderItem.findFirst({
-        where: { order_id, dish_id },
-      });
-      if (!orderItem) {
-        throw new ValidationError('This dish was not part of the specified order');
-      }
-
-      // 4. Create the review
+      // 3. Create the review
       const newRating = await prisma.rating.create({
         data: {
-          cafe_id: order.cafe_id,
+          cafe_id: dish.cafe_id,
           dish_id,
-          order_id,
-          table_id,
+          order_id: order_id || null,
+          table_id: table_id || null,
           rating,
           comment,
         },

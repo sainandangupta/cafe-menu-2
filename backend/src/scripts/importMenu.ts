@@ -3,6 +3,7 @@ import path from 'path';
 import fs from 'fs';
 import prisma from '../config/database';
 import logger from '../utils/logger';
+import { getIngredients } from '../utils/ingredientGenerator';
 
 async function main() {
   const excelPath = path.join(__dirname, '../../../BBucks_Menu.xlsx');
@@ -168,6 +169,7 @@ async function main() {
           category_id: categoryId,
           name: dishName,
           price: cleanPrice,
+          ingredients: getIngredients(dishName, categoryName),
           image_url: imageUrl,
           is_available: true,
           is_veg: true,

@@ -2,6 +2,7 @@ import prisma from '../config/database';
 import { CreateDishInput, UpdateDishInput } from '../validators/dishes';
 import { NotFoundError } from '../utils/errors';
 import { Prisma } from '@prisma/client';
+import { getIngredients } from '../utils/ingredientGenerator';
 
 export const dishService = {
   getDishes: async (filters: {
@@ -84,6 +85,14 @@ export const dishService = {
   },
 
   createDish: async (cafeId: string, data: CreateDishInput) => {
+    let finalIngredients = data.ingredients || [];
+    if (finalIngredients.length === 0) {
+      const category = await prisma.category.findUnique({
+        where: { id: data.category_id },
+      });
+      finalIngredients = getIngredients(data.name, category?.name || '');
+    }
+
     const newDish = await prisma.dish.create({
       data: {
         cafe_id: cafeId,
@@ -91,7 +100,7 @@ export const dishService = {
         name: data.name,
         description: data.description,
         price: new Prisma.Decimal(data.price),
-        ingredients: data.ingredients,
+        ingredients: finalIngredients,
         image_url: data.image_url,
         is_available: data.is_available,
         is_veg: data.is_veg,

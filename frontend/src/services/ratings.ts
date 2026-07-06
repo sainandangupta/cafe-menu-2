@@ -4,8 +4,8 @@ import { Rating } from '../types';
 export interface CreateRatingInput {
   cafe_id: string;
   dish_id: string;
-  order_id: string;
-  table_id: string;
+  order_id?: string;
+  table_id?: string;
   rating: number;
   comment?: string;
 }
