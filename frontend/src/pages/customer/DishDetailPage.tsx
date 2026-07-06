@@ -61,9 +61,10 @@ export const DishDetailPage: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['dish', id] });
       queryClient.invalidateQueries({ queryKey: ['dish-ratings', id] });
       queryClient.invalidateQueries({ queryKey: ['dishes'] });
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      alert('Failed to submit rating. Please try again.');
+      const errMsg = error.response?.data?.message || error.message || 'Please try again.';
+      alert(`Failed to submit rating: ${errMsg}`);
     } finally {
       setIsSubmitting(false);
     }

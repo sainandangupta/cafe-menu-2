@@ -79,8 +79,10 @@ export const OrderStatusPage: React.FC = () => {
         rating: stars,
       });
       setSubmittedRatings((prev) => ({ ...prev, [dishId]: true }));
-    } catch {
-      alert('Failed to submit rating. Please try again.');
+    } catch (error: any) {
+      console.error(error);
+      const errMsg = error.response?.data?.message || error.message || 'Please try again.';
+      alert(`Failed to submit rating: ${errMsg}`);
     }
   };
 
