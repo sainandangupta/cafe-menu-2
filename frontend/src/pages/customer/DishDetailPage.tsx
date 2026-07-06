@@ -19,7 +19,6 @@ export const DishDetailPage: React.FC = () => {
 
   const [userRating, setUserRating] = useState<number>(0);
   const [hoverRating, setHoverRating] = useState<number>(0);
-  const [userComment, setUserComment] = useState('');
   const [hasRated, setHasRated] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -49,11 +48,9 @@ export const DishDetailPage: React.FC = () => {
         dish_id: id || '',
         table_id: tableContext.tableId || undefined,
         rating: userRating,
-        comment: userComment.trim() || undefined,
       });
       setHasRated(true);
       setUserRating(0);
-      setUserComment('');
       // Invalidate caches to refresh data
       queryClient.invalidateQueries({ queryKey: ['dish', id] });
       queryClient.invalidateQueries({ queryKey: ['dish-ratings', id] });
@@ -247,148 +244,52 @@ export const DishDetailPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Customer Reviews Section */}
+        {/* Rate this Dish Card */}
         <section className="px-4 mt-6">
-          <button
-            onClick={() => setReviewsOpen(!reviewsOpen)}
-            className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3.5 flex items-center justify-between cursor-pointer hover:bg-gray-50/50 transition-colors"
-          >
-            <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-[#fea619] text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-              <span className="font-semibold text-xs text-gray-700">
-                Customer Reviews {ratingCount > 0 ? `(${ratingCount})` : ''}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              {avgRating && (
-                <span className="text-xs font-bold text-gray-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
-                  {avgRating} ★
-                </span>
-              )}
-              <span className="material-symbols-outlined text-gray-400">
-                {reviewsOpen ? 'expand_less' : 'expand_more'}
-              </span>
-            </div>
-          </button>
-
-          {reviewsOpen && (
-            <div className="bg-white border border-t-0 border-gray-200 rounded-b-xl px-4 py-4 -mt-1 space-y-4">
-              {/* Rate this Dish Form */}
-              <div className="border-b border-gray-100 pb-4 mb-2">
-                <h4 className="text-xs font-extrabold text-gray-800 uppercase tracking-wider mb-2.5">Rate this Dish</h4>
-                {hasRated ? (
-                  <div className="flex items-center gap-2 text-emerald-700 bg-emerald-50 border border-emerald-100 px-3 py-2.5 rounded-xl text-xs font-semibold">
-                    <span className="material-symbols-outlined text-lg">check_circle</span>
-                    <span>Thank you! Your rating has been submitted.</span>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3">
-                      <div className="flex items-center gap-1.5">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <button
-                            key={star}
-                            type="button"
-                            onClick={() => setUserRating(star)}
-                            onMouseEnter={() => setHoverRating(star)}
-                            onMouseLeave={() => setHoverRating(0)}
-                            className="text-amber-400 hover:scale-110 active:scale-95 transition-transform cursor-pointer"
-                          >
-                            <span className="material-symbols-outlined text-2xl" style={{
-                              fontVariationSettings: (hoverRating || userRating) >= star ? "'FILL' 1" : "'FILL' 0"
-                            }}>
-                              star
-                            </span>
-                          </button>
-                        ))}
-                      </div>
-                      {(hoverRating || userRating) > 0 && (
-                        <span className="text-xs font-bold text-amber-600 bg-amber-50 border border-amber-100 px-2.5 py-0.5 rounded-full">
-                          {hoverRating || userRating} / 5
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex gap-2">
-                      <input
-                        placeholder="Write an optional review..."
-                        value={userComment}
-                        onChange={(e) => setUserComment(e.target.value)}
-                        className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs outline-none focus:bg-white focus:border-[#006e2f] transition-all"
-                      />
-                      <button
-                        onClick={handleSubmitRating}
-                        disabled={userRating === 0 || isSubmitting}
-                        className="bg-[#006e2f] hover:bg-[#006e2f]/90 disabled:bg-gray-200 disabled:text-gray-400 text-white rounded-xl text-xs font-bold px-4 py-2 transition-all active:scale-95 flex items-center justify-center gap-1 cursor-pointer disabled:cursor-not-allowed"
-                      >
-                        {isSubmitting ? 'Submitting...' : 'Submit'}
-                      </button>
-                    </div>
-                  </div>
-                )}
+          <div className="bg-white rounded-3xl p-5 border border-gray-100 shadow-xs">
+            <h3 className="text-xs font-extrabold text-gray-800 uppercase tracking-wider mb-3">Rate this Dish</h3>
+            {hasRated ? (
+              <div className="flex items-center gap-2 text-emerald-700 bg-emerald-50 border border-emerald-100 px-3 py-2.5 rounded-xl text-xs font-semibold">
+                <span className="material-symbols-outlined text-lg">check_circle</span>
+                <span>Thank you! Your rating has been submitted.</span>
               </div>
-
-              {ratingCount > 0 ? (
-                <>
-                  {/* Star distribution bars */}
-                  <div className="space-y-1.5">
-                    {[5, 4, 3, 2, 1].map((star) => {
-                      const count = reviews.filter(r => r.rating === star).length;
-                      const pct = ratingCount > 0 ? Math.round((count / ratingCount) * 100) : 0;
-                      return (
-                        <div key={star} className="flex items-center gap-2 text-[11px]">
-                          <span className="w-3 text-right font-bold text-gray-500">{star}</span>
-                          <span className="material-symbols-outlined text-amber-400 text-[13px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-                          <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-                            <div className="h-full bg-amber-400 rounded-full transition-all" style={{ width: `${pct}%` }} />
-                          </div>
-                          <span className="w-7 text-right text-gray-400 font-semibold">{pct}%</span>
-                        </div>
-                      );
-                    })}
+            ) : (
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-1.5">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        type="button"
+                        onClick={() => setUserRating(star)}
+                        onMouseEnter={() => setHoverRating(star)}
+                        onMouseLeave={() => setHoverRating(0)}
+                        className="text-amber-400 hover:scale-110 active:scale-95 transition-transform cursor-pointer"
+                      >
+                        <span className="material-symbols-outlined text-2xl" style={{
+                          fontVariationSettings: (hoverRating || userRating) >= star ? "'FILL' 1" : "'FILL' 0"
+                        }}>
+                          star
+                        </span>
+                      </button>
+                    ))}
                   </div>
-
-                  {/* Individual reviews */}
-                  {reviews.length > 0 && (
-                    <div className="border-t border-gray-100 pt-3 space-y-3">
-                      {reviews.map((review, idx) => (
-                        <div key={idx} className="flex flex-col gap-1">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-0.5">
-                              {[1, 2, 3, 4, 5].map((s) => (
-                                <span
-                                  key={s}
-                                  className="material-symbols-outlined text-[13px]"
-                                  style={{
-                                    fontVariationSettings: s <= review.rating ? "'FILL' 1" : "'FILL' 0",
-                                    color: s <= review.rating ? '#f59e0b' : '#d1d5db',
-                                  }}
-                                >
-                                  star
-                                </span>
-                              ))}
-                            </div>
-                            {review.created_at && (
-                              <span className="text-[9px] text-gray-400">
-                                {new Date(review.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
-                              </span>
-                            )}
-                          </div>
-                          {review.comment && (
-                            <p className="text-[11px] text-gray-600 leading-relaxed">"{review.comment}"</p>
-                          )}
-                        </div>
-                      ))}
-                    </div>
+                  {(hoverRating || userRating) > 0 && (
+                    <span className="text-xs font-bold text-amber-600 bg-amber-50 border border-amber-100 px-2.5 py-0.5 rounded-full">
+                      {hoverRating || userRating} / 5
+                    </span>
                   )}
-                </>
-              ) : (
-                <div className="text-center py-4">
-                  <span className="material-symbols-outlined text-gray-300 text-3xl mb-1">rate_review</span>
-                  <p className="text-xs text-gray-400">No reviews yet. Be the first to rate this dish!</p>
                 </div>
-              )}
-            </div>
-          )}
+                <button
+                  onClick={handleSubmitRating}
+                  disabled={userRating === 0 || isSubmitting}
+                  className="bg-[#006e2f] hover:bg-[#006e2f]/90 disabled:bg-gray-200 disabled:text-gray-400 text-white rounded-xl text-xs font-bold px-5 py-2 transition-all active:scale-95 flex items-center justify-center gap-1 cursor-pointer disabled:cursor-not-allowed"
+                >
+                  {isSubmitting ? 'Submitting...' : 'Submit Rating'}
+                </button>
+              </div>
+            )}
+          </div>
         </section>
 
         {/* Goes great with Section */}

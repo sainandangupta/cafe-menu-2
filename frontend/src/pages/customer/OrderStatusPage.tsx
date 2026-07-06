@@ -19,7 +19,6 @@ export const OrderStatusPage: React.FC = () => {
   const [staffCalledText, setStaffCalledText] = useState('');
 
   const [ratedDishes, setRatedDishes] = useState<Record<string, number>>({});
-  const [ratedComments, setRatedComments] = useState<Record<string, string>>({});
   const [submittedRatings, setSubmittedRatings] = useState<Record<string, boolean>>({});
 
   // Connect to Socket.IO and join the table room for real-time status updates
@@ -72,7 +71,6 @@ export const OrderStatusPage: React.FC = () => {
         order_id: order!.id,
         table_id: order!.table_id,
         rating: stars,
-        comment: ratedComments[dishId] || '',
       });
       setSubmittedRatings((prev) => ({ ...prev, [dishId]: true }));
     } catch {
@@ -293,37 +291,29 @@ export const OrderStatusPage: React.FC = () => {
                     </div>
 
                     {!submitted ? (
-                      <div className="flex flex-col gap-2">
-                        <div className="flex items-center gap-4">
-                          <div className="flex items-center gap-1.5">
-                            {[1, 2, 3, 4, 5].map((star) => (
-                              <button
-                                key={star}
-                                type="button"
-                                onClick={() => setRatedDishes((prev) => ({ ...prev, [dish.id]: star }))}
-                                className="text-amber-400 hover:scale-110 transition-transform cursor-pointer"
-                              >
-                                <span className="material-symbols-outlined text-lg" style={{
-                                  fontVariationSettings: ratedDishes[dish.id] >= star ? "'FILL' 1" : "'FILL' 0"
-                                }}>
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-1.5">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <button
+                              key={star}
+                              type="button"
+                              onClick={() => setRatedDishes((prev) => ({ ...prev, [dish.id]: star }))}
+                              className="text-amber-400 hover:scale-110 transition-transform cursor-pointer"
+                            >
+                              <span className="material-symbols-outlined text-lg" style={{
+                                fontVariationSettings: ratedDishes[dish.id] >= star ? "'FILL' 1" : "'FILL' 0"
+                              }}>
                                   star
-                                </span>
-                              </button>
-                            ))}
-                          </div>
-                          <button
-                            onClick={() => submitRating(dish.id)}
-                            className="bg-[#006e2f] hover:bg-[#006e2f]/90 text-white rounded-lg text-[10px] font-bold px-3 py-1.5 transition-colors active:scale-95"
-                          >
-                            Submit
-                          </button>
+                              </span>
+                            </button>
+                          ))}
                         </div>
-                        <input
-                          placeholder="Optional comment (e.g. delicious, too salty...)"
-                          value={ratedComments[dish.id] || ''}
-                          onChange={(e) => setRatedComments((prev) => ({ ...prev, [dish.id]: e.target.value }))}
-                          className="w-full px-3 py-1.5 bg-gray-50/50 border border-gray-200 rounded-lg text-xs outline-none focus:bg-white"
-                        />
+                        <button
+                          onClick={() => submitRating(dish.id)}
+                          className="bg-[#006e2f] hover:bg-[#006e2f]/90 text-white rounded-lg text-[10px] font-bold px-3 py-1.5 transition-colors active:scale-95"
+                        >
+                          Submit
+                        </button>
                       </div>
                     ) : (
                       <p className="text-[10px] text-gray-400 italic">Thank you for helping us improve!</p>
