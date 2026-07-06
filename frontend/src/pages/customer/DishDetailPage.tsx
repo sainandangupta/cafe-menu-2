@@ -180,8 +180,9 @@ export const DishDetailPage: React.FC = () => {
                 className="w-full px-4 py-3.5 bg-gray-50 flex items-center justify-between font-semibold text-xs text-gray-700"
               >
                 <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-gray-500 text-lg">restaurant_menu</span>
-                  <span>Ingredients</span>
+                  <span className="material-symbols-outlined text-[#006e2f] text-lg">auto_awesome</span>
+                  <span className="font-bold text-[#006e2f]">AI-Generated Ingredients</span>
+                  <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[8px] font-extrabold px-1.5 py-0.5 rounded-md uppercase tracking-wider scale-90">AI Generated</span>
                 </div>
                 <span className="material-symbols-outlined text-gray-400">
                   {ingredientsOpen ? 'expand_less' : 'expand_more'}
