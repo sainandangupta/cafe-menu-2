@@ -59,6 +59,7 @@ export const orderController = {
         subtotal: Number(o.subtotal),
         gst_amount: Number(o.gst_amount),
         total: Number(o.total),
+        customer_notes: o.customer_notes,
         items_count: o._count.order_items,
         placed_at: o.placed_at,
         delivered_at: o.delivered_at,
@@ -113,6 +114,7 @@ export const orderController = {
           total: order.total,
           items_count: order.items_count,
           placed_at: order.placed_at,
+          customer_notes: order.customer_notes,
         });
       }
 
@@ -257,6 +259,7 @@ export const orderController = {
         subtotal: Number(o.subtotal),
         gst_amount: Number(o.gst_amount),
         total: Number(o.total),
+        customer_notes: o.customer_notes,
         placed_at: o.placed_at,
         delivered_at: o.delivered_at,
         created_at: o.created_at,

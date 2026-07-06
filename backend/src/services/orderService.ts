@@ -154,6 +154,7 @@ export const orderService = {
       subtotal: Number(createdOrder.subtotal),
       gst_amount: Number(createdOrder.gst_amount),
       total: Number(createdOrder.total),
+      customer_notes: createdOrder.customer_notes,
       placed_at: createdOrder.placed_at,
       table_number: table.table_number,
       cafe_id: cafeId,
